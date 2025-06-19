@@ -10,8 +10,7 @@ const Options = struct {
     format: []const u8 = "BAT0: %percent$2%",
 };
 
-pub fn module_battery(file: std.fs.File, allocator: std.mem.Allocator, options: Options) !void {
-    const output = file.writer();
+pub fn module_battery(output: anytype, allocator: std.mem.Allocator, options: Options) !void {
     const eFullContents = try readFileContents("/sys/class/power_supply/BAT0/energy_full", allocator);
     defer allocator.free(eFullContents);
     const eFull = try std.fmt.parseInt(u32, eFullContents[0 .. eFullContents.len - 1], 10);

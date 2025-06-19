@@ -4,9 +4,7 @@ const Options = struct {
     format: []const u8 = "mem: %usedMB / %totalMB (%percent$1%)",
 };
 
-pub fn module_memory(file: std.fs.File, allocator: std.mem.Allocator, options: Options) !void {
-    const output = file.writer();
-
+pub fn module_memory(output: anytype, allocator: std.mem.Allocator, options: Options) !void {
     const ramFile = try std.fs.openFileAbsolute("/proc/meminfo", .{ .mode = .read_only });
     defer ramFile.close();
 

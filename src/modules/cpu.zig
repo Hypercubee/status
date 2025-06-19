@@ -37,15 +37,13 @@ const Options = struct {
     format: []const u8 = "%usage$2% @ %frequency$2GHz (%temperature$1˚C)",
 };
 
-pub fn module_cpu(file: std.fs.File, allocator: std.mem.Allocator, options: Options) !void {
+pub fn module_cpu(output: anytype, allocator: std.mem.Allocator, options: Options) !void {
     const info = try cpu_get_usage(allocator);
     const didl = info.idle - last_idle;
     const dtot = info.total - last_total;
     const cpu_usage = 100 * (1 - (@as(f32, @floatFromInt(didl)) / @as(f32, @floatFromInt(dtot))));
     last_idle = info.idle;
     last_total = info.total;
-
-    const output = file.writer();
 
     const freqFile = try std.fs.openFileAbsolute("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq", .{ .mode = .read_only });
     defer freqFile.close();
