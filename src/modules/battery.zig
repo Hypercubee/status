@@ -10,7 +10,12 @@ const Options = struct {
     format: []const u8 = "BAT0: %percent$2%",
 };
 
-pub fn module_battery(output: anytype, allocator: std.mem.Allocator, options: Options) !void {
+pub fn module_battery(output: anytype, allocator: std.mem.Allocator, options: anytype) anyerror!void {
+    var userOptions: Options = .{};
+    if (@hasField(@TypeOf(options), "format")) {
+        userOptions.format = options.format;
+    }
+
     const eFullContents = try readFileContents("/sys/class/power_supply/BAT0/energy_full", allocator);
     defer allocator.free(eFullContents);
     const eFull = try std.fmt.parseInt(u32, eFullContents[0 .. eFullContents.len - 1], 10);
@@ -25,7 +30,7 @@ pub fn module_battery(output: anytype, allocator: std.mem.Allocator, options: Op
     const percent = 100 * @as(f32, @floatFromInt(eNow)) / @as(f32, @floatFromInt(eFull));
 
     const formatFullText = @import("../format.zig").formatFullText;
-    const full_text = try formatFullText(options.format, &.{
+    const full_text = try formatFullText(userOptions.format, &.{
         .{ .name = "percent", .value = percent },
     }, allocator);
 

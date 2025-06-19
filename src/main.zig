@@ -3,10 +3,6 @@ const c = @cImport({
     @cInclude("stdio.h");
 });
 
-const module_cpu = @import("./modules/cpu.zig").module_cpu;
-const module_memory = @import("./modules/memory.zig").module_memory;
-const module_battery = @import("./modules/battery.zig").module_battery;
-
 fn sleepms(ms: u64) void {
     std.Thread.sleep(ms * 1000_000);
 }
@@ -16,13 +12,24 @@ fn print_status_bar(buffWriter: anytype, allocator: std.mem.Allocator) !void {
 
     try output.writeAll("[");
 
-    try module_cpu(output, allocator, .{});
-    try output.writeAll(",\n");
+    const moduleFuncSig = fn (anytype, std.mem.Allocator, anytype) anyerror!void;
 
-    try module_memory(output, allocator, .{});
-    try output.writeAll(",\n");
+    const modules = [_]*const moduleFuncSig{
+        @import("./modules/battery.zig").module_battery,
+        @import("./modules/cpu.zig").module_cpu,
+        @import("./modules/memory.zig").module_memory,
+    };
 
-    try module_battery(output, allocator, .{});
+    var addComma: bool = false;
+    inline for (modules) |module| {
+        if (addComma) {
+            try output.writeAll(",\n");
+        }
+        addComma = true;
+        module(output, allocator, .{}) catch {
+            addComma = false;
+        };
+    }
 
     // external command
     //     const argv = .{ "cat", "/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq" };

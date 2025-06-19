@@ -4,7 +4,12 @@ const Options = struct {
     format: []const u8 = "mem: %usedMB / %totalMB (%percent$1%)",
 };
 
-pub fn module_memory(output: anytype, allocator: std.mem.Allocator, options: Options) !void {
+pub fn module_memory(output: anytype, allocator: std.mem.Allocator, options: anytype) anyerror!void {
+    var userOptions: Options = .{};
+    if (@hasField(@TypeOf(options), "format")) {
+        userOptions.format = options.format;
+    }
+
     const ramFile = try std.fs.openFileAbsolute("/proc/meminfo", .{ .mode = .read_only });
     defer ramFile.close();
 
@@ -27,7 +32,7 @@ pub fn module_memory(output: anytype, allocator: std.mem.Allocator, options: Opt
     const memUsed = memTotal - memAvailable;
 
     const formatFullText = @import("../format.zig").formatFullText;
-    const full_text = try formatFullText(options.format, &.{
+    const full_text = try formatFullText(userOptions.format, &.{
         .{ .name = "used", .value = @as(f32, @floatFromInt(memUsed)) / 1000 },
         .{ .name = "total", .value = @as(f32, @floatFromInt(memTotal)) / 1000 },
         .{ .name = "available", .value = @as(f32, @floatFromInt(memAvailable)) / 1000 },
