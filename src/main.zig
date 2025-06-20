@@ -7,26 +7,45 @@ fn sleepms(ms: u64) void {
     std.Thread.sleep(ms * 1000_000);
 }
 
+const Modules = enum {
+    Cpu,
+    Memory,
+    Battery,
+};
+
+fn addModule(module: Modules, writer: anytype, allocator: std.mem.Allocator, options: anytype) !void {
+    switch (module) {
+        Modules.Cpu => {
+            try @import("./modules/cpu.zig").module_cpu(writer, allocator, options);
+        },
+        Modules.Memory => {
+            try @import("./modules/memory.zig").module_memory(writer, allocator, options);
+        },
+        Modules.Battery => {
+            try @import("./modules/battery.zig").module_battery(writer, allocator, options);
+        },
+    }
+}
+
 fn print_status_bar(buffWriter: anytype, allocator: std.mem.Allocator) !void {
     const output = buffWriter.writer();
 
     try output.writeAll("[");
 
-    const moduleFuncSig = fn (anytype, std.mem.Allocator, anytype) anyerror!void;
-
-    const modules = [_]*const moduleFuncSig{
-        @import("./modules/battery.zig").module_battery,
-        @import("./modules/cpu.zig").module_cpu,
-        @import("./modules/memory.zig").module_memory,
+    const used_modules = [_]Modules{
+        Modules.Battery,
+        Modules.Cpu,
+        Modules.Memory,
     };
 
     var addComma: bool = false;
-    inline for (modules) |module| {
+    for (used_modules) |module| {
         if (addComma) {
             try output.writeAll(",\n");
         }
         addComma = true;
-        module(output, allocator, .{}) catch {
+        // TODO: add a way to customize the options and probably change them to string => string hash map or something
+        addModule(module, output, allocator, .{}) catch {
             addComma = false;
         };
     }
