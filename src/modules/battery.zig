@@ -10,10 +10,12 @@ const Options = struct {
     format: []const u8 = "BAT0: %percent$2%",
 };
 
-pub fn module_battery(output: anytype, allocator: std.mem.Allocator, options: anytype) !void {
+pub fn module_battery(output: anytype, allocator: std.mem.Allocator, options: ?std.StringHashMap([]const u8)) !void {
     var userOptions: Options = .{};
-    if (@hasField(@TypeOf(options), "format")) {
-        userOptions.format = options.format;
+    if (options) |customizedOptions| {
+        if (customizedOptions.get("format")) |value| {
+            userOptions.format = value;
+        }
     }
 
     const eFullContents = try readFileContents("/sys/class/power_supply/BAT0/energy_full", allocator);

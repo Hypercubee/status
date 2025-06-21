@@ -37,10 +37,12 @@ const Options = struct {
     format: []const u8 = "%usage$2% @ %frequency$2GHz (%temperature$1˚C)",
 };
 
-pub fn module_cpu(output: anytype, allocator: std.mem.Allocator, options: anytype) !void {
+pub fn module_cpu(output: anytype, allocator: std.mem.Allocator, options: ?std.StringHashMap([]const u8)) !void {
     var userOptions: Options = .{};
-    if (@hasField(@TypeOf(options), "format")) {
-        userOptions.format = options.format;
+    if (options) |customizedOptions| {
+        if (customizedOptions.get("format")) |value| {
+            userOptions.format = value;
+        }
     }
     const info = try cpu_get_usage(allocator);
     const didl = info.idle - last_idle;

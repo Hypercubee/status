@@ -13,7 +13,7 @@ const Modules = enum {
     Battery,
 };
 
-fn addModule(module: Modules, writer: anytype, allocator: std.mem.Allocator, options: anytype) !void {
+fn addModule(module: Modules, writer: anytype, allocator: std.mem.Allocator, options: ?std.StringHashMap([]const u8)) !void {
     switch (module) {
         Modules.Cpu => {
             try @import("./modules/cpu.zig").module_cpu(writer, allocator, options);
@@ -29,13 +29,22 @@ fn addModule(module: Modules, writer: anytype, allocator: std.mem.Allocator, opt
 
 fn print_status_bar(buffWriter: anytype, allocator: std.mem.Allocator) !void {
     const output = buffWriter.writer();
-
+    const Options = std.StringHashMap([]const u8);
     try output.writeAll("[");
 
-    const used_modules = [_]Modules{
-        Modules.Battery,
-        Modules.Cpu,
-        Modules.Memory,
+    var hm = Options.init(allocator);
+    defer hm.deinit();
+    // try hm.put("format", "my format");
+
+    const ModulesAndOptions = struct {
+        mod: Modules,
+        opt: ?Options,
+    };
+
+    const used_modules = [_]ModulesAndOptions{
+        .{ .mod = Modules.Battery, .opt = null },
+        .{ .mod = Modules.Cpu, .opt = null },
+        .{ .mod = Modules.Memory, .opt = null },
     };
 
     var addComma: bool = false;
@@ -44,8 +53,7 @@ fn print_status_bar(buffWriter: anytype, allocator: std.mem.Allocator) !void {
             try output.writeAll(",\n");
         }
         addComma = true;
-        // TODO: add a way to customize the options and probably change them to string => string hash map or something
-        addModule(module, output, allocator, .{}) catch {
+        addModule(module.mod, output, allocator, module.opt) catch {
             addComma = false;
         };
     }
