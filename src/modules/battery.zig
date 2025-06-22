@@ -36,9 +36,8 @@ pub fn module_battery(output: anytype, allocator: std.mem.Allocator, options: ?s
     const percent = 100 * @as(f32, @floatFromInt(eNow)) / @as(f32, @floatFromInt(eFull));
     const realPercent = 100 * @as(f32, @floatFromInt(eNow)) / @as(f32, @floatFromInt(eFullDesign));
 
-    const formatFullText = @import("../format.zig").formatFullText;
-
-    const full_text = try formatFullText(userOptions.format, &.{
+    const format = @import("../format.zig");
+    const full_text = try format.formatFullText(userOptions.format, &.{
         .{ .name = "percent", .value = .{ .Number = percent } },
         .{ .name = "real_percent", .value = .{ .Number = realPercent } },
         .{ .name = "capacity", .value = .{ .Number = @as(f32, @floatFromInt(eFull)) / 1000000 } },

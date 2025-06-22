@@ -33,8 +33,8 @@ pub fn module_memory(output: anytype, allocator: std.mem.Allocator, options: ?st
 
     const memUsed = memTotal - memAvailable;
 
-    const formatFullText = @import("../format.zig").formatFullText;
-    const full_text = try formatFullText(userOptions.format, &.{
+    const format = @import("../format.zig");
+    const full_text = try format.formatFullText(userOptions.format, &.{
         .{ .name = "used", .value = .{ .Number = @as(f32, @floatFromInt(memUsed)) / 1000 } },
         .{ .name = "total", .value = .{ .Number = @as(f32, @floatFromInt(memTotal)) / 1000 } },
         .{ .name = "available", .value = .{ .Number = @as(f32, @floatFromInt(memAvailable)) / 1000 } },

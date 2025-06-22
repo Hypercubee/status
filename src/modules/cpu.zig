@@ -64,8 +64,8 @@ pub fn module_cpu(output: anytype, allocator: std.mem.Allocator, options: ?std.S
 
     const temp = @as(f32, @floatFromInt(tempint)) / 1000;
 
-    const formatFullText = @import("../format.zig").formatFullText;
-    const full_text = try formatFullText(userOptions.format, &.{
+    const format = @import("../format.zig");
+    const full_text = try format.formatFullText(userOptions.format, &.{
         .{ .name = "usage", .value = .{ .Number = cpu_usage } },
         .{ .name = "frequency", .value = .{ .Number = @as(f32, @floatFromInt(freq)) / 1000000 } },
         .{ .name = "temperature", .value = .{ .Number = temp } },

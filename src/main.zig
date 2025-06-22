@@ -8,6 +8,7 @@ fn sleepms(ms: u64) void {
 }
 
 const Modules = enum {
+    Template,
     Cpu,
     Memory,
     Battery,
@@ -15,6 +16,9 @@ const Modules = enum {
 
 fn addModule(module: Modules, writer: anytype, allocator: std.mem.Allocator, options: ?std.StringHashMap([]const u8)) !void {
     switch (module) {
+        Modules.Template => {
+            try @import("./modules/template.zig").module_template(writer, allocator, options);
+        },
         Modules.Cpu => {
             try @import("./modules/cpu.zig").module_cpu(writer, allocator, options);
         },
@@ -45,6 +49,7 @@ fn print_status_bar(buffWriter: anytype, allocator: std.mem.Allocator) !void {
         .{ .mod = Modules.Battery, .opt = hm },
         .{ .mod = Modules.Cpu, .opt = null },
         .{ .mod = Modules.Memory, .opt = null },
+        .{ .mod = Modules.Template, .opt = null },
     };
 
     var addComma: bool = false;
