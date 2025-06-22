@@ -1,7 +1,12 @@
 const std = @import("std");
 
+const valueUnion = union(enum) {
+    Number: f32,
+    Slice: []const u8,
+};
+
 const FormatValue = struct {
-    value: f32,
+    value: valueUnion,
     name: []const u8,
 };
 
@@ -58,16 +63,23 @@ pub fn formatFullText(format_string: []const u8, fmtValues: []const FormatValue,
             while (fmtValueIndex < fmtValues.len) : (fmtValueIndex += 1) {
                 if (compareMatch(fmtValues[fmtValueIndex].name, format_string[i + 1 ..])) {
                     i += fmtValues[fmtValueIndex].name.len;
-                    var decimals: u3 = 0;
-                    if (i + 2 < format_string.len and format_string[i + 1] == '$') {
-                        if (format_string[i + 2] >= '0' and format_string[i + 2] <= '7') {
-                            decimals = @intCast(format_string[i + 2] - '0');
-                            i += 1;
-                        }
-                        i += 1;
+                    switch (fmtValues[fmtValueIndex].value) {
+                        .Number => {
+                            var decimals: u3 = 0;
+                            if (i + 2 < format_string.len and format_string[i + 1] == '$') {
+                                if (format_string[i + 2] >= '0' and format_string[i + 2] <= '7') {
+                                    decimals = @intCast(format_string[i + 2] - '0');
+                                    i += 1;
+                                }
+                                i += 1;
+                            }
+                            try appendNumber(outputString.writer(), fmtValues[fmtValueIndex].value.Number, decimals);
+                        },
+                        .Slice => {
+                            const text = fmtValues[fmtValueIndex].value.Slice;
+                            try outputString.writer().writeAll(text);
+                        },
                     }
-                    try appendNumber(outputString.writer(), fmtValues[fmtValueIndex].value, decimals);
-                    //try outputString.writer().print("{d:.2}", .{fmtValues[fmtValueIndex].value});
                     continue :char_loop;
                 }
             } else {

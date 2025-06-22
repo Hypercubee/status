@@ -66,9 +66,9 @@ pub fn module_cpu(output: anytype, allocator: std.mem.Allocator, options: ?std.S
 
     const formatFullText = @import("../format.zig").formatFullText;
     const full_text = try formatFullText(userOptions.format, &.{
-        .{ .name = "usage", .value = cpu_usage },
-        .{ .name = "frequency", .value = @as(f32, @floatFromInt(freq)) / 1000000 },
-        .{ .name = "temperature", .value = temp },
+        .{ .name = "usage", .value = .{ .Number = cpu_usage } },
+        .{ .name = "frequency", .value = .{ .Number = @as(f32, @floatFromInt(freq)) / 1000000 } },
+        .{ .name = "temperature", .value = .{ .Number = temp } },
     }, allocator);
 
     defer allocator.free(full_text);

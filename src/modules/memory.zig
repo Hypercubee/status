@@ -35,10 +35,10 @@ pub fn module_memory(output: anytype, allocator: std.mem.Allocator, options: ?st
 
     const formatFullText = @import("../format.zig").formatFullText;
     const full_text = try formatFullText(userOptions.format, &.{
-        .{ .name = "used", .value = @as(f32, @floatFromInt(memUsed)) / 1000 },
-        .{ .name = "total", .value = @as(f32, @floatFromInt(memTotal)) / 1000 },
-        .{ .name = "available", .value = @as(f32, @floatFromInt(memAvailable)) / 1000 },
-        .{ .name = "percent", .value = 100 * @as(f32, @floatFromInt(memUsed)) / @as(f32, @floatFromInt(memTotal)) },
+        .{ .name = "used", .value = .{ .Number = @as(f32, @floatFromInt(memUsed)) / 1000 } },
+        .{ .name = "total", .value = .{ .Number = @as(f32, @floatFromInt(memTotal)) / 1000 } },
+        .{ .name = "available", .value = .{ .Number = @as(f32, @floatFromInt(memAvailable)) / 1000 } },
+        .{ .name = "percent", .value = .{ .Number = 100 * @as(f32, @floatFromInt(memUsed)) / @as(f32, @floatFromInt(memTotal)) } },
     }, allocator);
     defer allocator.free(full_text);
     try output.writeAll("{");

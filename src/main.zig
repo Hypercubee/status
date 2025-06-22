@@ -34,7 +34,7 @@ fn print_status_bar(buffWriter: anytype, allocator: std.mem.Allocator) !void {
 
     var hm = Options.init(allocator);
     defer hm.deinit();
-    // try hm.put("format", "my format");
+    try hm.put("format", "BAT0 %state : %real_percent$2%");
 
     const ModulesAndOptions = struct {
         mod: Modules,
@@ -42,7 +42,7 @@ fn print_status_bar(buffWriter: anytype, allocator: std.mem.Allocator) !void {
     };
 
     const used_modules = [_]ModulesAndOptions{
-        .{ .mod = Modules.Battery, .opt = null },
+        .{ .mod = Modules.Battery, .opt = hm },
         .{ .mod = Modules.Cpu, .opt = null },
         .{ .mod = Modules.Memory, .opt = null },
     };
